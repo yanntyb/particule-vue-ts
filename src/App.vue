@@ -14,17 +14,16 @@ import Particule from "@/components/Particule.vue";
 import { useMouse } from "@/composable/useMouse";
 import {
   useParticuleStore,
-  Particule as ParticuleType,
+  Particule as ParticuleType, ParticulePosition
 } from "@/store/particuleStore";
-const { onMouseMove } = useMouse();
+const { onMouseMove, currentMousePosition } = useMouse();
 const { onParticuleAdded } = useParticuleStore();
 
 const score = ref<number>(0);
 const moveDodged = ref<number>(0);
 
 const particuleLength = computed<number>((): number => {
-  return 1
-  // return 1 + Math.floor(moveDodged.value / 3);
+  return 1;
 });
 
 onMouseMove(() => {
@@ -38,6 +37,15 @@ onParticuleAdded((particule?: Ref<ParticuleType>) => {
   particule.value.events = {
     onMoveFinish: () => {
       moveDodged.value++;
+    },
+    onCollision: {
+      position: {
+        x: currentMousePosition.value.x,
+        y: currentMousePosition.value.y,
+      },
+      callback: (position: ParticulePosition) => {
+        console.log("collision");
+      },
     },
   };
 });

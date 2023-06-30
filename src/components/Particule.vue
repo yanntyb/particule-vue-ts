@@ -25,7 +25,7 @@ const props = withDefaults(defineProps<IProps>(), {
   definition: () => ({
     speed: 1,
   }),
-  randomInitialSpeed: true,
+  randomInitialSpeed: false,
   randomInitialPosition: true,
   showStats: false,
 });
@@ -35,11 +35,12 @@ const particuleId = ref<number>();
 const particuleDefinition: Ref<Particule> = addParticule({
   definition: {
     currentPosition: { x: 0, y: 0 },
-    speed: 1,
+    speed: 0.5,
     color: uniqolor.random().color,
-    height: 50,
-    width: 50,
-    moveEveryMs: 1000 + Math.random() * 2000,
+    height: 30,
+    width: 30,
+    moveEveryMs: 4000,
+    // moveEveryMs: 1000 + Math.random() * 2000,
     canMove: false,
   },
   id: props.id,

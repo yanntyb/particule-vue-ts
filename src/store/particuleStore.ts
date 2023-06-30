@@ -20,6 +20,10 @@ export interface Particule {
   events?: {
     onMove?: () => void;
     onMoveFinish?: () => void;
+    onCollision?: {
+      position: ParticulePosition;
+      callback: (position: ParticulePosition) => void;
+    };
   };
   nextPosition: ParticulePosition[];
 }
@@ -31,8 +35,21 @@ const moveParticulePosition = (
   if (particule.value.events?.onMove) {
     particule.value.events.onMove();
   }
+
   particule.value.definition.currentPosition.x = newPosition.x;
   particule.value.definition.currentPosition.y = newPosition.y;
+
+  // Déclenchement de l'event de collision si la particule est sur la position de collision
+  if (particule.value.events?.onCollision) {
+    if (
+      particule.value.events?.onCollision.position.x === newPosition.x &&
+      particule.value.events?.onCollision.position.x === newPosition.x &&
+      particule.value.events?.onCollision.position.x === newPosition.x &&
+      particule.value.events?.onCollision.position.y === newPosition.y
+    ) {
+      particule.value.events.onCollision.callback(newPosition);
+    }
+  }
 };
 
 export const useParticuleStore = defineStore("particules", () => {
@@ -91,21 +108,20 @@ export const useParticuleStore = defineStore("particules", () => {
     const steps = Math.max(absDx, absDy);
     const stepSize = particule.value.definition.speed * 10;
 
-    const distanceThreshold = stepSize + 10; // Seuil de distance
+    const distanceThreshold = Math.abs(stepSize); // Seu
 
-    const distance = Math.sqrt(
-      Math.pow(
-        latestPosition.x - particule.value.definition.currentPosition.x,
-        2
-      ) +
-        Math.pow(
-          latestPosition.y - particule.value.definition.currentPosition.y,
-          2
-        )
-    );
+    const distanceX =
+      latestPosition.x - particule.value.definition.currentPosition.x;
+
+    const distanceY =
+      latestPosition.y - particule.value.definition.currentPosition.y;
+
 
     // La particule est arrivée à destination
-    if (distance <= distanceThreshold) {
+    if (
+      Math.abs(distanceX) - Math.abs(distanceThreshold) <= 0 &&
+      Math.abs(distanceY) - Math.abs(distanceThreshold) <= 0
+    ) {
       particule.value.nextPosition.shift();
 
       if (particule.value.events?.onMoveFinish) {
