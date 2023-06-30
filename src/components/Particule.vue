@@ -5,12 +5,15 @@ import { useInterval } from "@/composable/useInterval";
 import { useScreen } from "@/composable/useScreen";
 import { useMouse } from "@/composable/useMouse";
 import { useParticuleStore, Particule } from "@/store/particuleStore";
+import { useStatsStore } from "@/store/statsStore";
 import uniqolor from "uniqolor";
 
 const { screenX, screenY } = useScreen();
-const { currentMousePosition, onFirstMouseMove } = useMouse();
-const { addParticule, moveParticule } = useParticuleStore();
+const { getCurrentMousePosition, onFirstMouseMove } = useMouse();
+const { addParticule, moveParticule, replaceParticuleDestination } =
+  useParticuleStore();
 const { interval, timeout } = useInterval();
+const { addStats } = useStatsStore();
 
 type IProps =
   | Particule
@@ -25,9 +28,9 @@ const props = withDefaults(defineProps<IProps>(), {
   definition: () => ({
     speed: 1,
   }),
-  randomInitialSpeed: false,
+  randomInitialSpeed: true,
   randomInitialPosition: true,
-  showStats: false,
+  showStats: true,
 });
 
 const particuleId = ref<number>();
@@ -39,8 +42,8 @@ const particuleDefinition: Ref<Particule> = addParticule({
     color: uniqolor.random().color,
     height: 30,
     width: 30,
-    moveEveryMs: 4000,
-    // moveEveryMs: 1000 + Math.random() * 2000,
+    // moveEveryMs: 4000,
+    moveEveryMs: 1000 + Math.random() * 2000,
     canMove: false,
   },
   id: props.id,
@@ -85,15 +88,16 @@ onMounted(() => {
 });
 
 interval(() => {
-  if (particuleDefinition.value.nextPosition.length > 0) {
+  if (particuleDefinition.value.nextPosition.length > 0 || !particuleId.value) {
     return;
   }
-  particuleDefinition.value.nextPosition = [
-    {
-      x: currentMousePosition.value.x,
-      y: currentMousePosition.value.y,
-    },
-  ];
+
+  const nextPosition = {
+    x: getCurrentMousePosition().x,
+    y: getCurrentMousePosition().y,
+  };
+  particuleDefinition.value.definition.positionBeforeMove = nextPosition;
+  replaceParticuleDestination(particuleId.value, [nextPosition]);
 }, particuleDefinition.value.definition.moveEveryMs);
 
 interval(() => {
@@ -119,6 +123,11 @@ onFirstMouseMove(() => {
         {{ particuleDefinition.definition.currentPosition.x }}
         {{ particuleDefinition.definition.currentPosition.y }}
       </span>
+      <br />
+      <span>
+        {{ particuleDefinition.definition.positionBeforeMove?.x }}
+        {{ particuleDefinition.definition.positionBeforeMove?.y }}
+      </span>
     </div>
   </div>
 </template>
@@ -131,6 +140,6 @@ onFirstMouseMove(() => {
   width: v-bind(particuleWidth);
   height: v-bind(particuleHeight);
   border: v-bind(particuleColor);
-  color: red;
+  color: white;
 }
 </style>

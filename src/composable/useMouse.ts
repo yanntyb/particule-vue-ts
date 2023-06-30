@@ -6,13 +6,22 @@ export interface MousePosition {
 }
 
 export function useMouse() {
-  const currentMousePosition = ref<MousePosition>({ x: 0, y: 0 });
+  const currentMousePositionRef = ref<MousePosition>({ x: 0, y: 0 });
   const lastClickPosition = ref<MousePosition>({ x: 0, y: 0 });
   const mouseMovedOnce = ref(false);
+  const currentMousePosition = { x: 0, y: 0 };
 
-  const updatePosition = (event: MouseEvent, position: Ref<MousePosition>) => {
+  const updatePositionRef = (
+    event: MouseEvent,
+    position: Ref<MousePosition>
+  ) => {
     position.value.y = event.pageY;
     position.value.x = event.pageX;
+  };
+
+  const updatePosition = (event: MouseEvent, position: MousePosition) => {
+    position.y = event.pageY;
+    position.x = event.pageX;
   };
 
   const onClick = (callback: () => void) => {
@@ -36,19 +45,24 @@ export function useMouse() {
   };
 
   onMounted(() => {
-    window.addEventListener("mousemove", (event) =>
-      updatePosition(event, currentMousePosition)
-    );
+    window.addEventListener("mousemove", (event) => {
+      updatePositionRef(event, currentMousePositionRef);
+      updatePosition(event, currentMousePosition);
+    });
     window.addEventListener("click", (event) =>
-      updatePosition(event, lastClickPosition)
+      updatePositionRef(event, lastClickPosition)
     );
   });
+
+  const getCurrentMousePosition = () => currentMousePosition;
+
   return {
-    currentMousePosition,
+    currentMousePositionRef,
     lastClickPosition,
     mouseMovedOnce,
     onClick,
     onFirstMouseMove,
     onMouseMove,
+    getCurrentMousePosition,
   };
 }

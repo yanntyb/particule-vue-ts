@@ -10,6 +10,7 @@ export interface Particule {
   id: number;
   definition: {
     currentPosition: ParticulePosition;
+    positionBeforeMove?: ParticulePosition;
     speed: number;
     color: string;
     width: number;
@@ -39,13 +40,17 @@ const moveParticulePosition = (
   particule.value.definition.currentPosition.x = newPosition.x;
   particule.value.definition.currentPosition.y = newPosition.y;
 
+  console.log(particule.value.events?.onCollision?.position.x);
+
   // Déclenchement de l'event de collision si la particule est sur la position de collision
   if (particule.value.events?.onCollision) {
     if (
-      particule.value.events?.onCollision.position.x === newPosition.x &&
-      particule.value.events?.onCollision.position.x === newPosition.x &&
-      particule.value.events?.onCollision.position.x === newPosition.x &&
-      particule.value.events?.onCollision.position.y === newPosition.y
+      particule.value.events?.onCollision.position.x -
+        particule.value.definition.width / 2 >
+        0 &&
+      particule.value.events?.onCollision.position.y -
+        particule.value.definition.height / 2 >
+        0
     ) {
       particule.value.events.onCollision.callback(newPosition);
     }
@@ -116,7 +121,6 @@ export const useParticuleStore = defineStore("particules", () => {
     const distanceY =
       latestPosition.y - particule.value.definition.currentPosition.y;
 
-
     // La particule est arrivée à destination
     if (
       Math.abs(distanceX) - Math.abs(distanceThreshold) <= 0 &&
@@ -175,11 +179,43 @@ export const useParticuleStore = defineStore("particules", () => {
     );
   };
 
+  const addParticuleDestination = (
+    particuleId: number,
+    destination: ParticulePosition
+  ) => {
+    const particule = getParticule(particuleId);
+
+    if (!particule) {
+      return;
+    }
+
+    particule.value.nextPosition.push(destination);
+  };
+
+  const replaceParticuleDestination = (
+    particuleId: number,
+    destinations: ParticulePosition[]
+  ) => {
+    const particule = getParticule(particuleId);
+
+    if (!particule) {
+      return;
+    }
+
+    particule.value.nextPosition = [];
+
+    destinations.forEach((destination: ParticulePosition) => {
+      addParticuleDestination(particuleId, destination);
+    });
+  };
+
   return {
     getParticule,
     addParticule,
     moveParticule,
     getAllParticules,
     onParticuleAdded,
+    addParticuleDestination,
+    replaceParticuleDestination,
   };
 });

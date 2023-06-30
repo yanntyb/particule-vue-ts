@@ -1,9 +1,6 @@
 <template>
   <div style="width: 100vw; height: 100vh">
-    <div id="stats">
-      <p>Mouvement de la souris : {{ score }}</p>
-      <p>Mouvement des enemies finis: {{ moveDodged }}</p>
-    </div>
+    <StatsBoard />
     <Particule v-bind:key="i" v-for="i in particuleLength" :id="i" />
   </div>
 </template>
@@ -14,13 +11,18 @@ import Particule from "@/components/Particule.vue";
 import { useMouse } from "@/composable/useMouse";
 import {
   useParticuleStore,
-  Particule as ParticuleType, ParticulePosition
+  Particule as ParticuleType,
+  ParticulePosition,
 } from "@/store/particuleStore";
-const { onMouseMove, currentMousePosition } = useMouse();
+import { useStatsStore } from "@/store/statsStore";
+import StatsBoard from "@/components/Stats/StatsBoard.vue";
+const { onMouseMove, currentMousePositionRef } = useMouse();
 const { onParticuleAdded } = useParticuleStore();
+const { addStats, addOnBoardMountedCallback } = useStatsStore();
 
 const score = ref<number>(0);
 const moveDodged = ref<number>(0);
+const collision = ref<number>(0);
 
 const particuleLength = computed<number>((): number => {
   return 1;
@@ -28,6 +30,21 @@ const particuleLength = computed<number>((): number => {
 
 onMouseMove(() => {
   score.value++;
+});
+
+addOnBoardMountedCallback(() => {
+  addStats({
+    label: "score",
+    value: score,
+  });
+  addStats({
+    label: "dodged",
+    value: moveDodged,
+  });
+  addStats({
+    label: "collision",
+    value: collision,
+  });
 });
 
 onParticuleAdded((particule?: Ref<ParticuleType>) => {
@@ -40,11 +57,11 @@ onParticuleAdded((particule?: Ref<ParticuleType>) => {
     },
     onCollision: {
       position: {
-        x: currentMousePosition.value.x,
-        y: currentMousePosition.value.y,
+        x: currentMousePositionRef.value.x,
+        y: currentMousePositionRef.value.y,
       },
       callback: (position: ParticulePosition) => {
-        console.log("collision");
+        collision.value++;
       },
     },
   };
@@ -52,14 +69,5 @@ onParticuleAdded((particule?: Ref<ParticuleType>) => {
 </script>
 
 <style scoped>
-#stats {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 100;
-  width: 20vw;
-  height: 20vw;
-  border: 1px solid greenyellow;
-  color: red;
-}
+
 </style>
