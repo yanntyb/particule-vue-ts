@@ -5,7 +5,7 @@
     id="game"
     style="width: 100vw; height: 100vh"
   >
-    <Particule v-bind:key="i" v-for="i in particuleLength" :id="i" />
+    <Particule v-bind:key="i" v-for="i in particuleLength" :id="i"/>
   </div>
 </template>
 
@@ -28,9 +28,10 @@ const score = ref<number>(0);
 const moveDodged = ref<number>(0);
 const collision = ref<number>(0);
 const onCollision = ref<boolean>(false);
+const blinkindColor = ref<string>("black");
 
 const particuleLength = computed<number>((): number => {
-  return 15;
+  return 1;
 });
 
 onMouseMove(() => {
@@ -56,37 +57,30 @@ onParticuleAdded((particule?: Ref<ParticuleType>) => {
   if (!particule) {
     return;
   }
-  console.log(particule.value.id, "onParticuleAdded");
-  onFirstMouseMove((position?: MousePosition) => {
-    const currentMousePosition = currentMousePositionRef;
+  const currentMousePosition = currentMousePositionRef;
 
-    console.log(particule.value.id, "onFirstMouseMove", position);
-    particule.value.events.onCollision = {
-      getPosition: () => currentMousePosition.value,
-      callback: (position: ParticulePosition) => {
-        collision.value++;
-        onCollision.value = true;
+  particule.value.events.onCollision = {
+    getPosition: () => currentMousePosition.value,
+    callback: (position: ParticulePosition) => {
+      collision.value++;
+      onCollision.value = true;
 
-        setTimeout(() => {
-          onCollision.value = false;
-        }, 1000);
-      },
-    };
+      blinkindColor.value = particule.value.definition.color;
 
-    addStats({
-      label: "collision on ",
-      value: () =>
-        (
-          Math.abs(
-            particule.value.definition.currentPosition.x -
-              particule.value.events.onCollision.getPosition().x
-          ) -
-          particule.value.definition.width / 2
-        ).toString(),
-    });
-  });
+      setTimeout(() => {
+        onCollision.value = false;
+      }, 1000);
+    },
+    callable: true,
+    collidedDuringMove: false,
+  };
 
-  particule.value.events.onMoveFinish = () => moveDodged.value++;
+  particule.value.events.onMoveFinish = () => {
+    if (particule.value.events.onCollision?.collidedDuringMove) {
+      return;
+    }
+    moveDodged.value++;
+  };
 });
 </script>
 
@@ -101,7 +95,7 @@ onParticuleAdded((particule?: Ref<ParticuleType>) => {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: &;
+    background-color: v-bind(blinkindColor);
     opacity: 0;
     animation: blink 0.5s infinite;
   }
