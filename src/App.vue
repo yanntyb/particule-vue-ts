@@ -8,7 +8,7 @@
 <script setup lang="ts">
 import { computed, Ref, ref } from "vue";
 import Particule from "@/components/Particule.vue";
-import { useMouse } from "@/composable/useMouse";
+import { MousePosition, useMouse } from "@/composable/useMouse";
 import {
   useParticuleStore,
   Particule as ParticuleType,
@@ -16,7 +16,7 @@ import {
 } from "@/store/particuleStore";
 import { useStatsStore } from "@/store/statsStore";
 import StatsBoard from "@/components/Stats/StatsBoard.vue";
-const { onMouseMove, currentMousePositionRef } = useMouse();
+const { onMouseMove, currentMousePositionRef, onFirstMouseMove } = useMouse();
 const { onParticuleAdded } = useParticuleStore();
 const { addStats, addOnBoardMountedCallback } = useStatsStore();
 
@@ -35,15 +35,15 @@ onMouseMove(() => {
 addOnBoardMountedCallback(() => {
   addStats({
     label: "score",
-    value: score,
+    value: () => score.value.toString(),
   });
   addStats({
     label: "dodged",
-    value: moveDodged,
+    value: () => moveDodged.value.toString(),
   });
   addStats({
     label: "collision",
-    value: collision,
+    value: () => collision.value.toString(),
   });
 });
 
@@ -51,23 +51,26 @@ onParticuleAdded((particule?: Ref<ParticuleType>) => {
   if (!particule) {
     return;
   }
-  particule.value.events = {
-    onMoveFinish: () => {
-      moveDodged.value++;
-    },
-    onCollision: {
-      position: {
-        x: currentMousePositionRef.value.x,
-        y: currentMousePositionRef.value.y,
-      },
+  onFirstMouseMove((position?: MousePosition) => {
+    const currentMousePosition = currentMousePositionRef;
+    addStats({
+      label: "collision on ",
+      value: () =>
+        Math.abs(
+          particule.value.definition.currentPosition.x -
+          particule.value.events?.onCollision.getPosition().x
+        ) - particule.value.definition.width / 2,
+    });
+    particule.value.events.onCollision = {
+      getPosition: () => currentMousePosition.value,
       callback: (position: ParticulePosition) => {
         collision.value++;
       },
-    },
-  };
+    };
+  });
+
+  particule.value.events.onMoveFinish = () => moveDodged.value++;
 });
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

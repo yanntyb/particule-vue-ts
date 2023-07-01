@@ -3,8 +3,8 @@ import { Ref, ref } from "vue";
 
 export interface Stats {
   label: string;
-  value: Ref<number | string>;
-  id?: number;
+  value: () => string;
+  id?: string;
 }
 
 export const useStatsStore = defineStore("stats", () => {
@@ -14,7 +14,10 @@ export const useStatsStore = defineStore("stats", () => {
   const onBoardMounted: (() => void)[] = [];
 
   const addStats = (newStat: Stats) => {
-    const statRef: Stats = { ...newStat, id: stats.value.length };
+    const statRef: Stats = {
+      ...newStat,
+      id: newStat.id ?? stats.value.length.toString(),
+    };
 
     stats.value.push(statRef);
     onStatsAdded.forEach((callback) => callback(statRef));
@@ -22,7 +25,14 @@ export const useStatsStore = defineStore("stats", () => {
     return statRef;
   };
 
-  const getStat = (statId: number): Stats | undefined => {
+  const addUniqueStats = (newStat: Stats, id: string) => {
+    if (getStat(id)) {
+      return;
+    }
+    addStats({ ...newStat, id: id });
+  };
+
+  const getStat = (statId: string): Stats | undefined => {
     if (typeof stats.value === "undefined") {
       return undefined;
     }
@@ -48,5 +58,6 @@ export const useStatsStore = defineStore("stats", () => {
     addOnStatsAddedCallback,
     setBoardMounted,
     addOnBoardMountedCallback,
+    addUniqueStats,
   };
 });

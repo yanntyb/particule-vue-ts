@@ -18,11 +18,11 @@ export interface Particule {
     moveEveryMs: number;
     canMove: boolean;
   };
-  events?: {
+  events: {
     onMove?: () => void;
     onMoveFinish?: () => void;
     onCollision?: {
-      position: ParticulePosition;
+      getPosition: () => ParticulePosition;
       callback: (position: ParticulePosition) => void;
     };
   };
@@ -40,16 +40,20 @@ const moveParticulePosition = (
   particule.value.definition.currentPosition.x = newPosition.x;
   particule.value.definition.currentPosition.y = newPosition.y;
 
-  console.log(particule.value.events?.onCollision?.position.x);
-
   // Déclenchement de l'event de collision si la particule est sur la position de collision
   if (particule.value.events?.onCollision) {
     if (
-      particule.value.events?.onCollision.position.x -
-        particule.value.definition.width / 2 >
+      Math.abs(
+        particule.value.definition.currentPosition.x -
+          particule.value.events?.onCollision.getPosition().x
+      ) -
+        particule.value.definition.width / 2 <=
         0 &&
-      particule.value.events?.onCollision.position.y -
-        particule.value.definition.height / 2 >
+      Math.abs(
+        particule.value.definition.currentPosition.y -
+          particule.value.events?.onCollision.getPosition().y
+      ) -
+        particule.value.definition.height / 2 <=
         0
     ) {
       particule.value.events.onCollision.callback(newPosition);

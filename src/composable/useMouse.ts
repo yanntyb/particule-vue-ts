@@ -32,14 +32,17 @@ export function useMouse() {
     window.addEventListener("mousemove", callback);
   };
 
-  const onFirstMouseMove = (callback: () => void) => {
-    window.addEventListener("mousemove", () => {
+  const onFirstMouseMove = (callback: (position?: MousePosition) => void) => {
+    window.addEventListener("mousemove", (event: MouseEvent) => {
       if (mouseMovedOnce.value) {
         return;
       }
       if (!mouseMovedOnce.value) {
         mouseMovedOnce.value = true;
-        callback();
+        callback({
+          x: event.pageX,
+          y: event.pageY,
+        });
       }
     });
   };

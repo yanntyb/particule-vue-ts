@@ -46,6 +46,7 @@ const particuleDefinition: Ref<Particule> = addParticule({
     moveEveryMs: 1000 + Math.random() * 2000,
     canMove: false,
   },
+  events: {},
   id: props.id,
   nextPosition: [],
 });
@@ -74,6 +75,19 @@ const particuleHeight = computed<string>(
 const particuleColor = computed<string>(
   () => "1px solid " + particuleDefinition.value.definition.color
 );
+
+addStats({
+  label: "x",
+  value: () => particuleDefinition.value.definition.currentPosition.x.toString(),
+});
+addStats({
+  label: "y",
+  value: () => particuleDefinition.value.definition.currentPosition.y.toString(),
+});
+addStats({
+  label: "size",
+  value: () => particuleDefinition.value.definition.width.toString(),
+});
 
 onMounted(() => {
   if (props.randomInitialSpeed) {

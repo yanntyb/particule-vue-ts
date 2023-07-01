@@ -4,14 +4,14 @@ import { Stats, useStatsStore } from "@/store/statsStore";
 const { getStat } = useStatsStore();
 
 const props = defineProps<{
-  statId: number;
+  statId: string;
 }>();
 
 const stat: Stats | undefined = getStat(props.statId);
 
 const getContent = computed<string>(() => {
   if (stat) {
-    return `${stat.label}: ${stat.value}`;
+    return `${stat.label}: ${stat.value()}`;
   }
   return "";
 });
