@@ -1,5 +1,7 @@
 import { defineStore } from "pinia";
 import { Ref, ref, watch } from "vue";
+import { useInterval } from "@/composable/useInterval";
+const { timeout } = useInterval();
 
 export interface ParticulePosition {
   x: number;
@@ -24,6 +26,8 @@ export interface Particule {
     onCollision?: {
       getPosition: () => ParticulePosition;
       callback: (position: ParticulePosition) => void;
+      callable: boolean;
+      collidedDuringMove: boolean;
     };
   };
   nextPosition: ParticulePosition[];
@@ -41,7 +45,10 @@ const moveParticulePosition = (
   particule.value.definition.currentPosition.y = newPosition.y;
 
   // Déclenchement de l'event de collision si la particule est sur la position de collision
-  if (particule.value.events?.onCollision) {
+  if (
+    particule.value.events?.onCollision &&
+    particule.value.events.onCollision.callable
+  ) {
     if (
       Math.abs(
         particule.value.definition.currentPosition.x -
@@ -56,6 +63,16 @@ const moveParticulePosition = (
         particule.value.definition.height <=
         0
     ) {
+      // On désactive l'appel de l'event de collision jusqu'à ce que la particule ait bougé de nouveau
+      particule.value.events.onCollision.callable = false;
+      particule.value.events.onCollision.collidedDuringMove = true;
+      timeout(() => {
+        if (particule.value.events?.onCollision) {
+          particule.value.events.onCollision.callable = true;
+          particule.value.events.onCollision.collidedDuringMove = false;
+        }
+      }, particule.value.definition.moveEveryMs);
+
       particule.value.events.onCollision.callback(newPosition);
     }
   }
