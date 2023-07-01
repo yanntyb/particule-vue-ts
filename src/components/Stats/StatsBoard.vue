@@ -30,10 +30,12 @@ onMounted(() => {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 100;
-  width: 20vw;
-  height: 20vw;
+  min-width: 20vw;
+  min-height: 20vw;
   border: 1px solid greenyellow;
   color: red;
+  padding: 0.5vw;
+  background-color: black;
+  z-index: 1000;
 }
 </style>

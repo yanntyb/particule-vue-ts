@@ -47,13 +47,13 @@ const moveParticulePosition = (
         particule.value.definition.currentPosition.x -
           particule.value.events?.onCollision.getPosition().x
       ) -
-        particule.value.definition.width / 2 <=
+        particule.value.definition.width <=
         0 &&
       Math.abs(
         particule.value.definition.currentPosition.y -
           particule.value.events?.onCollision.getPosition().y
       ) -
-        particule.value.definition.height / 2 <=
+        particule.value.definition.height <=
         0
     ) {
       particule.value.events.onCollision.callback(newPosition);

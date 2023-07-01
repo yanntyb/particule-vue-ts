@@ -40,8 +40,8 @@ const particuleDefinition: Ref<Particule> = addParticule({
     currentPosition: { x: 0, y: 0 },
     speed: 0.5,
     color: uniqolor.random().color,
-    height: 30,
-    width: 30,
+    height: Math.random() * 50 + 20,
+    width: Math.random() * 50 + 20,
     // moveEveryMs: 4000,
     moveEveryMs: 1000 + Math.random() * 2000,
     canMove: false,
@@ -129,21 +129,7 @@ onFirstMouseMove(() => {
 </script>
 
 <template>
-  <div class="block">
-    <div v-if="props.showStats">
-      <span> {{ particuleLeftPx }} {{ particuleTopPx }} </span>
-      <br />
-      <span>
-        {{ particuleDefinition.definition.currentPosition.x }}
-        {{ particuleDefinition.definition.currentPosition.y }}
-      </span>
-      <br />
-      <span>
-        {{ particuleDefinition.definition.positionBeforeMove?.x }}
-        {{ particuleDefinition.definition.positionBeforeMove?.y }}
-      </span>
-    </div>
-  </div>
+  <div class="block"/>
 </template>
 
 <style scoped>
